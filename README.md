@@ -1,38 +1,38 @@
-Role Name
-=========
+Ansible-cluster_elasticsearch_graylog_mongodb
+=======================
 
-A brief description of the role goes here.
+We need to take several steps to run this role.
 
-Requirements
-------------
+**step 1**: you need to install ansible. for install ansible Follow these commands.
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+`[root@ansibleserver]# yum install ansible`
 
-Role Variables
---------------
+**step 2**: go to this path `/etc/ansible/` and edit hosts file, add this line of code to the end of the file.
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+```
+[root@ansibleserver]# vim /etc/ansible/hosts
 
-Dependencies
-------------
+[elasticsearch]
+elasticsearch1 ansible_host=192.168.231.91
+elasticsearch2 ansible_host=192.168.231.92
+elasticsearch3 ansible_host=192.168.231.93
+```
+**step 3**: Download the role and move to the specified path. `/etc/ansible/roles/`
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+**step 4**: Now, we need to create playbook file. so, follow these commands:
 
-Example Playbook
-----------------
+```
+[root@ansibleserver]# vim /etc/ansible/playbook-elasticsearch.yml
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
-    - hosts: servers
+---
+    - hosts:
+        - elasticsearch
       roles:
-         - { role: username.rolename, x: 42 }
+        - cluster_elasticsearch_graylog_mongodb_ansible
+```
 
-License
--------
+**step 5**: Finally, we run the following role
 
-BSD
-
-Author Information
-------------------
-
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+```
+[root@ansibleserver]# cd /etc/ansible
+[root@ansibleserver ansible]# ansible-palybook playbook-elasticsearch.yml
