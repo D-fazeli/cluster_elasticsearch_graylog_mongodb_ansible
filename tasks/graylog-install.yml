@@ -1,0 +1,62 @@
+---
+
+- name: --- install graylog ---
+  yum:
+    name: graylog-server
+    state: present
+    
+
+# - name: ---  Set Hostname --- 
+#   shell: |
+#     hostnamectl set-hostname "{{ item.value.hostname }}{{ item.value.id }}"
+#   with_dict: "{{ graylog_nodes }}"
+#   when: ansible_env.SSH_CONNECTION.split(' ')[2] == item.value.ssh_ip   
+
+- name: --- upload graylog_server_conf.j2 ---
+  template: src=graylog_server_conf.j2 dest=/etc/graylog/server/server.conf
+
+- name: --- convert password secret to hash  ---
+  shell: |
+   echo -n "{{ general_config_graylog.password_secret }}" | sha256sum | awk '{print $1}'
+  register: password_secret
+
+- name: --- convert root_password_sha2 to hash  ---
+  shell: |
+   echo -n "{{ general_config_graylog.root_password_sha2 }}" | sha256sum | awk '{print $1}'
+  register: root_password_sha2
+
+- name: --- Remove password_secret from /etc/graylog/server/server.conf ---
+  lineinfile:
+    dest: /etc/graylog/server/server.conf
+    regexp: '^password_secret'
+    state: absent
+
+- name: --- Remove root_password_sha2 from /etc/graylog/server/server.conf ---
+  lineinfile:
+    dest: /etc/graylog/server/server.conf
+    regexp: '^root_password_sha2'
+    state: absent
+
+
+- name: ---   set password for root_secret graylog ---
+  lineinfile:
+    dest: /etc/graylog/server/server.conf
+    insertafter: "# Generate one by using for example: pwgen -N 1 -s 96"
+    state: present
+    line: password_secret = {{ password_secret.stdout_lines[0] }}
+
+- name: ---   set password for root_password_sha2 graylog ---
+  lineinfile:
+    dest: /etc/graylog/server/server.conf
+    insertafter: "# and put the resulting hash value into the following line"
+    state: present
+    line: root_password_sha2 = {{ root_password_sha2.stdout_lines[0] }}
+
+- name: --- set graylog java option ---
+  template: src=templates/graylog_jvm_option.j2 dest=/etc/sysconfig/graylog-server
+
+- name: --- start graylog-server ---
+  service:
+    name: graylog-server
+    state: started
+    

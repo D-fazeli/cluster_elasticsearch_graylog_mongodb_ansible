@@ -1,0 +1,102 @@
+---
+
+-  name: --- bind elasticsearch ip to hostname /etc/hosts ---
+   lineinfile:
+     dest: /etc/hosts
+     state: present
+     line: "{{ item.value.internal_ip }} {{ item.value.hostname }}{{ item.value.id }}"
+   with_dict: "{{ elasticsearch_nodes }}"
+   
+      
+-  name: --- bind garylog ip to hostname /etc/hosts ---
+   lineinfile:
+     dest: /etc/hosts
+     state: present
+     line: "{{ item.value.internal_ip }} {{ item.value.hostname }}{{ item.value.id }}"
+   with_dict: "{{ graylog_nodes }}"
+   
+
+-  name: --- bind mongodb ip to hostname /etc/hosts ---
+   lineinfile:
+     dest: /etc/hosts
+     state: present
+     line: "{{ item.value.internal_ip }} {{ item.value.hostname }}{{ item.value.id }}"
+   with_dict: "{{ mongodb_nodes }}"
+   
+      
+- name: --- mv old repo ---
+  shell: |
+     mkdir /etc/yum.repos.local/old_repo
+     cd /etc/yum.repos.local/
+     mv `ls -p | grep -v \/` old_repo/
+  ignore_errors: true   
+
+- name: --- config repository ---
+  copy:
+    dest: "/etc/yum.repos.local/backend.repo"
+    content: |
+       [backend_repo]
+       name= backend_repo
+       baseurl={{ general_config.url_repo }}
+       gpgcheck=0
+       enabled=1
+       
+- name: --- refresh repolist ---
+  shell: |
+     yum clean all
+     rm -fr /var/cache/yum/
+     
+- name: --- disable firewalld ------
+  shell: |
+    systemctl stop firewalld
+    systemctl disable firewalld
+    
+- name: --- disable selinux -------
+  selinux:
+      state: disabled    
+
+- name: --- Setup OS Parameters (sysctl.conf)----
+  blockinfile:
+    path: /etc/sysctl.conf
+    marker: "#-----------------"
+    insertafter: '### AFTER THIS LINE'
+    state: present
+    block: |
+      fs.file-max=512000
+      vm.max_map_count=262144
+
+- name: --- Setup OS Parameters (limits.conf)----
+  blockinfile:
+    path: /etc/security/limits.conf
+    marker: "#-----------------"
+    insertafter: '### AFTER THIS LINE'
+    state: present
+    block: |
+      elasticsearch       -       nofile          65535
+      elasticsearch       -       memlock         unlimited
+      
+
+- include_tasks: java.yml
+  when: "{{general_config.java_installation}}"
+
+- include_tasks: chrony-install-config.yml
+  when: "{{general_config.ntp_installation}}" 
+
+- include_tasks: mongodb-install.yml
+  when: "{{general_config.mongodb_installation}}"
+
+- include_tasks: elasticsearch-install.yml
+  when: "{{general_config.elasticsearch_installation}}"
+
+- include_tasks: graylog-install.yml
+  when: "{{general_config.graylog_installation}}"
+
+    
+
+
+  
+
+
+
+
+

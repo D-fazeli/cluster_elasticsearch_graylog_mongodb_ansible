@@ -1,0 +1,151 @@
+---
+
+- name: --- install mongodb ---
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+       - "mongodb-org"
+       - "libv8"
+       - "yaml-cpp"
+       - "libstemmer"
+
+- name: --- config mongodb ----
+  template: src={{item.src}} dest={{item.dest}}
+  with_items:
+     - { src: 'templates/mongod_conf.j2', dest: '/etc/mongod.conf' }
+     - { src: 'templates/mongo.initiate.set.j2', dest: '/root/mongo.initiate.set.js' }
+     - { src: 'templates/script-create-db-user-mongo.j2', dest: '/root/script-create-db-user-mongo' }
+     - { src: 'templates/primary_node.j2', dest: '/root/primary_node.sh' }   
+     
+- name: --- start mongo ---
+  shell: |
+    touch /root/.dbshell
+    systemctl start mongod
+
+- name: --- configuration mongodb  cluster ---
+  shell: |
+     mongo --host {{ item.value.internal_ip }} --port {{ item.value.port }} < /root/mongo.initiate.set.js
+  when:
+    - item.value.primary == true
+  with_dict: "{{ mongodb_nodes }}"
+  run_once: true      
+
+- name: --- restart mongo ---
+  shell: |
+    systemctl restart mongod
+
+- name: Wait for port 27017 to become open on the host, don't start checking for 5 seconds
+  wait_for:
+    port: 27017
+    delay: 13
+
+- name: --- detect master node ---
+  shell: mongo --host 127.0.0.1 --port 27017 --quiet --eval 'db.isMaster().primary'
+  run_once: true
+  register: master
+  
+- name: --- set variable master_node ---
+  set_fact: master_node="{{ master.stdout.split(':')|first }}"
+  with_dict: "{{ mongodb_nodes }}"
+  run_once: true
+
+- name: --- create db and user ----
+  shell: |
+    mongo < /root/script-create-db-user-mongo
+  when:
+     - master_node == "{{item.value.hostname}}{{item.value.id}}"
+  with_dict: "{{ mongodb_nodes }}"
+  run_once: true
+  
+# - name: --- geeeeeeeeeeeeeeeeteeeeeeeeeee ----
+#   set_fact: test={{item.value.hostname}}{{item.value.id}}
+#   when:
+#      - master_node == "{{item.value.hostname}}{{item.value.id}}"
+#   with_dict: "{{ mongodb_nodes }}"
+#   run_once: true
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# - name: --- restart mongod master node ----
+#   shell: |
+#      /usr/bin/mongod --master  --host {{ item.value.internal_ip }} --port {{ item.value.port }}
+#      touch /root/.dbshell
+#   when:
+#     - item.value.primary == true
+#     - item.value.internal_ip == ansible_env.SSH_CONNECTION.split(' ')[2]
+#   with_dict: "{{ mongodb_nodes }}"      
+
+# - name: --- restart mongod slave node ----
+#   shell: |
+#      /usr/bin/mongo --slave --host {{ item.value.internal_ip }} --port {{ item.value.port }}
+#      touch /root/.dbshell
+#   when:
+#     - item.value.primary == false
+#     - item.value.internal_ip == ansible_env.SSH_CONNECTION.split(' ')[2]
+#   with_dict: "{{ mongodb_nodes }}"      
+
+
+# - name: --- configuration mongodb  cluster ---
+#   shell: |
+#      /usr/bin/mongo --host {{ item.value.internal_ip }} --port {{ item.value.port }} < /root/mongo.initiate.set.js
+#   when:
+#     - item.value.primary == true
+#     - item.value.internal_ip == ansible_env.SSH_CONNECTION.split(' ')[2]
+#   with_dict: "{{ mongodb_nodes }}"      
+
+# - name: --- create db and user  ---
+#   shell: |
+#      /usr/bin/mongo --host {{ item.value.internal_ip }} --port {{ item.value.port }} < /root/script-create-db-user-mongo
+#   when:
+#     - item.value.primary == true
+#     - item.value.internal_ip == ansible_env.SSH_CONNECTION.split(' ')[2]
+#   with_dict: "{{ mongodb_nodes }}"      
+
+
+# - name: --- restart mongod after configuration cluster----
+#   shell: |
+#     systemctl restart mongod  
+
+  
+# - name: Wait for port 27017 to become open on the host, don't start checking for 5 seconds
+#   wait_for:
+#     port: 27017
+#     delay: 2
+  
+# - name: --- detect primary node ---
+#   shell: >
+#      echo 'db.runCommand("ismaster")' | /usr/bin/mongo | grep primary | cut -d ":" -f2 | sed 's/^..//'
+#   args:
+#     executable: /bin/bash
+#   register: mas
+  
+# - name: -- Detect primary node ----
+#   shell: >
+#     /usr/bin/mongo --host 127.0.0.1 --port 27017 \
+#                    --quiet -eval 'db.runCommand("isMaster")'
+#   register: members                 
+
+# - set_fact:
+#      master_node: "{{ members }}"
+
+# - name: --- create db and user ----
+#   shell: |
+#     mongo < /root/script-create-db-user-mongo
+#   when: 
+#     -  master_node == "{{ item.value.hostname }}{{ item.value.id }}"
+#   with_dict: "{{ mongodb_nodes }}"    
+ 

@@ -1,0 +1,139 @@
+---
+
+general_config: 
+  cluster_status: true
+  java_installation: true
+  ntp_installation: true
+  nginx_installation: true
+  graylog_web_interface_installation: true
+  elasticsearch_installation: true
+  graylog_installation: true
+  mongodb_installation: true
+  cluster_name: graylog-production
+  url_repo: http://172.16.1.66/backend_repo
+    
+general_config_elasticsearch:
+  path_data: /var/lib/elasticsearch
+  path_log:  /var/log/elasticsearch 
+
+general_config_graylog:
+    root_username: admin
+    root_timezone: Asia/Tehran
+    password_secret: yourpassword
+    root_password_sha2: yourpassword
+
+general_config_mongodb:
+    dbpath: /var/lib/mongo
+    logpath: /var/log/mongodb/mongod.log
+    pidfilepath:  /var/run/mongodb/mongod.pid    
+    replsetname: graylog
+    database_name: graylog
+    username: graylog
+    password: graylog123
+    wiredTiger_engineConfig_cacheSizeGB: 1
+#  ------------- Chrony section -------------------
+chrony_servers:
+    server1:
+        ip: 172.16.5.34
+    
+#  --------------- mongodb section ----------------
+mongodb_nodes:
+  node1:
+     hostname: mongodb
+     ssh_ip: 172.16.70.197
+     internal_ip: 172.16.70.197
+     port: 27017
+     primary: true
+     id: 1
+          
+  node2:
+     hostname: mongodb
+     ssh_ip: 172.16.70.198
+     internal_ip: 172.16.70.198
+     port: 27017
+     primary: false
+     id: 2
+     
+  node3:
+     hostname: mongodb
+     ssh_ip: 172.16.70.199
+     internal_ip: 172.16.70.199
+     port: 27017
+     primary: false
+     id: 3
+  
+  
+     
+#  --------------- elasticsearch section ----------------
+elasticsearch_nodes:
+  node1:
+    hostname: elasticsearch
+    ssh_ip: 172.16.70.197
+    internal_ip: 172.16.70.197
+    http_port: 9200
+    transport_tcp_port: 9300
+    id: 1
+    node_name: elasticsearch   
+    master_node: true
+    data_node: true
+    ingest_node: false
+    XmsNg: 3
+    XmxNg: 3
+  node2:
+    hostname: elasticsearch
+    ssh_ip: 172.16.70.198
+    internal_ip: 172.16.70.198
+    http_port: 9200
+    transport_tcp_port: 9300
+    id: 2
+    node_name: elasticsearch
+    master_node: true
+    data_node: true
+    ingest_node: false
+    XmsNg: 3
+    XmxNg: 3
+  node3:
+    hostname: elasticsearch
+    ssh_ip: 172.16.70.199
+    internal_ip: 172.16.70.199
+    http_port: 9200
+    transport_tcp_port: 9300
+    id: 3
+    node_name: elasticsearch
+    master_node: true
+    data_node: true
+    ingest_node: false
+    XmsNg: 3
+    XmxNg: 3
+#  --------------- graylog section ----------------
+graylog_nodes:
+  node1:
+   hostname: graylog
+   ssh_ip: 172.16.70.197
+   internal_ip: 172.16.70.197
+   rest_port: 9200
+   web_port: 9000
+   master: true
+   id: 1
+   XmsNg: 2
+   XmxNg: 2  
+  node2:
+    hostname: graylog
+    ssh_ip: 172.16.70.198
+    internal_ip: 172.16.70.198
+    rest_port: 9200
+    web_port: 9000
+    master: false
+    id: 2
+    XmsNg: 2
+    XmxNg: 2
+  node3:
+    hostname: graylog
+    ssh_ip: 172.16.70.199
+    internal_ip: 172.16.70.199
+    rest_port: 9200
+    web_port: 9000
+    master: false
+    id: 3
+    XmsNg: 2
+    XmxNg: 2

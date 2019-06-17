@@ -1,0 +1,58 @@
+---
+
+- name: --- install elasticsearch ---
+  yum:
+    name: elasticsearch
+    state: present
+
+
+- name: --- upload elasticsearch.yml ---
+  template: src=elasticsearch.yml.config.j2 dest=/etc/elasticsearch/elasticsearch.yml
+
+
+- name: --- JVM options ---
+  template: src=elasticsearch-jvm.j2 dest=/etc/elasticsearch/jvm.options
+
+-  name: --- Remove Jvm ---
+   lineinfile:
+     dest: /root/jvm.options
+     regexp: '^-Xm'
+     state: absent
+     
+-  name: --- add line Jvm ---
+   lineinfile:
+     dest: /etc/elasticsearch/jvm.options
+     state: present
+     insertafter: '# Xmx represents'
+     line: "{{ item }}"
+   with_items:
+     - "-Xmx{{elasticsearch_nodes.node1.XmxNg}}g"
+     - "-Xms{{elasticsearch_nodes.node1.XmsNg}}g"
+     
+- name: ---  Set Hostname --- 
+  shell: |
+    hostnamectl set-hostname "{{ item.value.hostname }}{{ item.value.id }}"
+  when: ansible_env.SSH_CONNECTION.split(' ')[2] == item.value.ssh_ip
+  with_dict: "{{ elasticsearch_nodes }}"
+  
+
+- name: --- Setup OS Parameters (sysctl.conf)----
+  blockinfile:
+    path: /etc/sysctl.conf
+    state: present
+    block: |
+      fs.file-max=512000
+
+- name: --- Setup OS Parameters (limits.conf)----
+  blockinfile:
+    path: /etc/security/limits.conf
+    state: present
+    block: |
+      *          -       nofile          65535
+
+- name: --- Satrt elasticsearch ---
+  shell: |
+    systemctl daemon-reload
+    systemctl start elasticsearch
+
+#- include_tasks: install-elasticsearch.yml
