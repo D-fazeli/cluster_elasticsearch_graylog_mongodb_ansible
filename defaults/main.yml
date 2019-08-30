@@ -10,7 +10,7 @@ general_config:
   graylog_installation: true
   mongodb_installation: true
   cluster_name: graylog-production
-  url_repo: http://172.16.1.66/backend_repo
+  url_repo: http://172.16.1.70
     
 general_config_elasticsearch:
   path_data: /var/lib/elasticsearch
@@ -115,7 +115,7 @@ graylog_nodes:
    web_port: 9000
    master: true
    id: 1
-   XmsNg: 2
+   XmsNg: 100
    XmxNg: 2  
   node2:
     hostname: graylog
@@ -125,7 +125,7 @@ graylog_nodes:
     web_port: 9000
     master: false
     id: 2
-    XmsNg: 2
+    XmsNg: 100
     XmxNg: 2
   node3:
     hostname: graylog
@@ -135,5 +135,5 @@ graylog_nodes:
     web_port: 9000
     master: false
     id: 3
-    XmsNg: 2
+    XmsNg: 100
     XmxNg: 2
