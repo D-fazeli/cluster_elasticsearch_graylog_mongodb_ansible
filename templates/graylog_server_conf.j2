@@ -105,7 +105,9 @@ plugin_dir = /usr/share/graylog-server/plugin
 # If the port is omitted, Graylog will use port 9000 by default.
 #
 # Default: 127.0.0.1:9000
-http_bind_address = http://{% for host in graylog_nodes %}{% if ansible_env.SSH_CONNECTION.split(' ')[2] == graylog_nodes[host].ssh_ip %}{{ graylog_nodes[host].internal_ip }}:{{graylog_nodes[host].web_port}}{% endif %}{% endfor %}
+
+http_bind_address = {% for host in graylog_nodes %}{% if ansible_env.SSH_CONNECTION.split(' ')[2] == graylog_nodes[host].ssh_ip %}{{ graylog_nodes[host].internal_ip }}:{{graylog_nodes[host].web_port}}{% endif %}{% endfor %}
+
 #http_bind_address = [2001:db8::1]:9000
 
 #### HTTP publish URI
@@ -122,6 +124,7 @@ http_bind_address = http://{% for host in graylog_nodes %}{% if ansible_env.SSH_
 # This configuration setting *must not* contain a wildcard address!
 #
 # Default: http://$http_bind_address/
+
 #http_publish_uri = http://192.168.1.1:9000/
 
 #### External Graylog URI
