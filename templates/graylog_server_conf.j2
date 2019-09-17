@@ -140,7 +140,8 @@ http_bind_address = {% for host in graylog_nodes %}{% if ansible_env.SSH_CONNECT
 #
 # Default: $http_publish_uri
 #http_external_uri = http://{% for host in graylog_nodes %}{% if ansible_env.SSH_CONNECTION.split(' ')[2] == graylog_nodes[host].ssh_ip %}{{ graylog_nodes[host].internal_ip }}:{{graylog_nodes[host].web_port}}{% endif %}{% endfor %}
-http_external_uri = http://192.168.1.45
+
+http_external_uri = http://192.168.1.45/
 
 #### Enable CORS headers for HTTP interface
 #
