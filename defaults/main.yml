@@ -1,88 +1,124 @@
 ---
 
-general_config: 
+general_config:
   cluster_status: true
-  java_installation: true
-  ntp_installation: true
-  nginx_installation: true
-  graylog_web_interface_installation: true
-  elasticsearch_installation: true
-  graylog_installation: true
-  mongodb_installation: true
-  cluster_name: graylog-production
-  url_repo: http://172.16.1.66/backend_repo
-    
+  install_java: false
+  install_nginx: false
+  install_mongodb: true
+  install_elasticsearch: true
+  install_graylog: true
+  cluster_name: graylog-sb
+  createRepo: false
+  domain_repository: repository.pdc.kpp.local
+  ip_repository: 192.168.0.241
+  RepoFileName: ansible-graylog
+  
+
+
 general_config_elasticsearch:
   path_data: /var/lib/elasticsearch
-  path_log:  /var/log/elasticsearch 
+  path_log:  /var/log/elasticsearch
 
 general_config_graylog:
     root_username: admin
     root_timezone: Asia/Tehran
     password_secret: yourpassword
     root_password_sha2: yourpassword
+    elasticsearch_shards: 3
+    elasticsearch_replicas: 1
 
 general_config_mongodb:
     dbpath: /var/lib/mongo
     logpath: /var/log/mongodb/mongod.log
-    pidfilepath:  /var/run/mongodb/mongod.pid    
+    pidfilepath:  /var/run/mongodb/mongod.pid
     replsetname: graylog
     database_name: graylog
     username: graylog
     password: graylog123
     wiredTiger_engineConfig_cacheSizeGB: 1
-#  ------------- Chrony section -------------------
-chrony_servers:
-    server1:
-        ip: 172.16.5.34
-    
+
+
+repository:
+  repo1:
+     id: 1
+     title_repo: ansible_repo
+     name: ansible_repo
+     baseurl: "http://{{ general_config.domain_repository }}/"
+     gpgcheck: 0
+     enable: 1 
+
+#  repo2:
+#     id: 2
+#     title_repo: ansible_nginx
+#     name: ansible_nginx
+#     baseurl: "http://{{ general_config.domain_repository }}/repo/nginxRepo"
+#     gpgcheck: 0
+#     enable: 1 
+#  
+#  repo3:
+#     id: 3
+#     title_repo: ansible_mon_packages
+#     name: ansible_mon_packages
+#     baseurl: "http://{{ general_config.domain_repository }}/repo/mon-packages"
+#     gpgcheck: 0
+#     enable: 1 
+#  
+#  repor4:
+#     id: 4
+#     title_repo: ansible_java
+#     name: ansible_java_jdk
+#     baseurl: "http://{{ general_config.domain_repository }}/repo/java"
+#     gpgcheck: 0
+#     enable: 1 
+#
+#
 #  --------------- mongodb section ----------------
 mongodb_nodes:
   node1:
      hostname: mongodb
-     ssh_ip: 172.16.70.197
-     internal_ip: 172.16.70.197
+     ssh_ip: 192.168.0.135
+     internal_ip: 192.168.0.135
      port: 27017
      primary: true
      id: 1
-          
+
   node2:
      hostname: mongodb
-     ssh_ip: 172.16.70.198
-     internal_ip: 172.16.70.198
+     ssh_ip: 192.168.0.149
+     internal_ip: 192.168.0.149
      port: 27017
      primary: false
      id: 2
-     
+
   node3:
      hostname: mongodb
-     ssh_ip: 172.16.70.199
-     internal_ip: 172.16.70.199
+     ssh_ip: 192.168.0.150
+     internal_ip: 192.168.0.150
      port: 27017
      primary: false
      id: 3
-  
-  
-     
+
+
+
 #  --------------- elasticsearch section ----------------
 elasticsearch_nodes:
   node1:
     hostname: elasticsearch
-    ssh_ip: 172.16.70.197
-    internal_ip: 172.16.70.197
+    ssh_ip: 192.168.0.135
+    internal_ip: 192.168.0.135
     http_port: 9200
     transport_tcp_port: 9300
     id: 1
-    node_name: elasticsearch   
+    node_name: elasticsearch
     master_node: true
     data_node: true
     ingest_node: false
-    XmsNg: 3
-    XmxNg: 3
+    XmsNg: 1
+    XmxNg: 1
   node2:
     hostname: elasticsearch
-    ssh_ip: 172.16.70.198
-    internal_ip: 172.16.70.198
+    ssh_ip: 192.168.0.149
+    internal_ip: 192.168.0.149
     http_port: 9200
     transport_tcp_port: 9300
     id: 2
@@ -90,12 +126,12 @@ elasticsearch_nodes:
     master_node: true
     data_node: true
     ingest_node: false
-    XmsNg: 3
-    XmxNg: 3
+    XmsNg: 1
+    XmxNg: 1
   node3:
     hostname: elasticsearch
-    ssh_ip: 172.16.70.199
-    internal_ip: 172.16.70.199
+    ssh_ip: 192.168.0.150
+    internal_ip: 192.168.0.150
     http_port: 9200
     transport_tcp_port: 9300
     id: 3
@@ -103,37 +139,38 @@ elasticsearch_nodes:
     master_node: true
     data_node: true
     ingest_node: false
-    XmsNg: 3
-    XmxNg: 3
+    XmsNg: 1
+    XmxNg: 1
 #  --------------- graylog section ----------------
 graylog_nodes:
-  node1:
+  node1: 
    hostname: graylog
-   ssh_ip: 172.16.70.197
-   internal_ip: 172.16.70.197
+   ssh_ip: 192.168.0.135
+   internal_ip: 192.168.0.135
    rest_port: 9200
    web_port: 9000
    master: true
    id: 1
-   XmsNg: 2
-   XmxNg: 2  
+   XmsNg: 1
+   XmxNg: 1
   node2:
     hostname: graylog
-    ssh_ip: 172.16.70.198
-    internal_ip: 172.16.70.198
+    ssh_ip: 192.168.0.149
+    internal_ip: 192.168.0.149
     rest_port: 9200
     web_port: 9000
     master: false
     id: 2
-    XmsNg: 2
-    XmxNg: 2
+    XmsNg: 1
+    XmxNg: 1
   node3:
     hostname: graylog
-    ssh_ip: 172.16.70.199
-    internal_ip: 172.16.70.199
+    ssh_ip: 192.168.0.150
+    internal_ip: 192.168.0.150
     rest_port: 9200
     web_port: 9000
     master: false
     id: 3
-    XmsNg: 2
-    XmxNg: 2
+    XmsNg: 1
+    XmxNg: 1
+

@@ -2,7 +2,7 @@
 
 - name: --- install elasticsearch ---
   yum:
-    name: elasticsearch
+    name: elasticsearch-oss
     state: present
 
 
